@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 if CLIENT then
-    SWEP.PrintName = "Schaufel"
+    SWEP.PrintName = "Schaufel (UN)"
     SWEP.Slot = 2
     SWEP.SlotPos = 1
     SWEP.DrawCrosshair = false

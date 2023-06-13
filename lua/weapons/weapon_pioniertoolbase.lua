@@ -86,8 +86,6 @@ if SERVER then
             else
                 self:SetSelectedFortification(1)
             end
-
-            print("DEBUG: Ausgewählte Befestigung:", self:GetSelectedFortification())
         end
     end
 
@@ -102,8 +100,6 @@ if SERVER then
             else
                 self:SetSelectedFortification(#self.Fortifications)
             end
-
-            print("DEBUG: Ausgewählte Befestigung:", self:GetSelectedFortification())
         end
     end
 
@@ -117,12 +113,14 @@ if SERVER then
                     local wep = ply:GetActiveWeapon()
 
                     if wep:IsValid() and wep:IsPioneertool() and wep:CanBuildFortification() then
-                        local fortification = ents.Create("prop_physics")
+                        local fortification = ents.Create("ent_fortification")
                         fortification:SetAngles(Angle(0, ply:EyeAngles().y - 180, 0))
                         fortification:SetModel(wep.Fortifications[wep:GetSelectedFortification()]["model"])
                         fortification:SetPos(ply:GetEyeTrace().HitPos - ply:GetEyeTrace().HitNormal * fortification:OBBMins().z)
                         fortification:Spawn()
                         fortification:SetGravity(150)
+                        fortification:SetFortificationHealth(0)
+                        fortification:SetMaxFortificationHealth(wep.Fortifications[wep:GetSelectedFortification()]["health"])
                         fortification:EmitSound("physics/concrete/rock_impact_hard" .. math.random(1, 6) .. ".wav")
                         local effectdata = EffectData()
                         effectdata:SetOrigin(Vector(fortification:GetPos().x, fortification:GetPos().y, fortification:GetPos().z) + (fortification:GetUp() * fortification:OBBMaxs().z / 2))
