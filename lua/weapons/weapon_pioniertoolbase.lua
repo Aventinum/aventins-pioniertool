@@ -6,6 +6,8 @@ if CLIENT then
     SWEP.SlotPos = 1
     SWEP.DrawCrosshair = false
     SWEP.DrawAmmo = false
+elseif SERVER then
+    util.AddNetworkString("AventinOpenFortPanel")
 end
 
 SWEP.Author = "Aventin"
@@ -107,31 +109,37 @@ if SERVER then
 
     hook.Add("KeyPress", "PlayerBuildsFortification", function(ply, key)
         if ply:IsValid() and key == IN_USE then
-            local wep = ply:GetActiveWeapon()
+            local built = false
 
-            if wep:IsValid() and wep:GetClass() == "weapon_pioniertoolbase" and wep:CanBuildFortification() then
-                local fortification = ents.Create("prop_physics")
-                fortification:SetAngles(Angle(0, ply:EyeAngles().y - 180, 0))
-                fortification:SetModel(wep.Fortifications[wep:GetSelectedFortification()]["model"])
-                fortification:SetPos(ply:GetEyeTrace().HitPos - ply:GetEyeTrace().HitNormal * fortification:OBBMins().z)
-                fortification:Spawn()
-                fortification:SetGravity(150)
-                fortification:EmitSound("physics/concrete/rock_impact_hard" .. math.random(1, 6) .. ".wav")
-                local physObj = fortification:GetPhysicsObject()
+            timer.Create("MenuTimer", 0.05, 5, function()
+                if not ply:KeyDown(IN_USE) and not built then
+                    built = true
+                    local wep = ply:GetActiveWeapon()
 
-                if physObj:IsValid() then
-                    physObj:SetMass(50000)
-                    physObj:EnableMotion(false)
+                    if wep:IsValid() and wep:GetClass() == "weapon_pioniertoolbase" and wep:CanBuildFortification() then
+                        local fortification = ents.Create("prop_physics")
+                        fortification:SetAngles(Angle(0, ply:EyeAngles().y - 180, 0))
+                        fortification:SetModel(wep.Fortifications[wep:GetSelectedFortification()]["model"])
+                        fortification:SetPos(ply:GetEyeTrace().HitPos - ply:GetEyeTrace().HitNormal * fortification:OBBMins().z)
+                        fortification:Spawn()
+                        fortification:SetGravity(150)
+                        fortification:EmitSound("physics/concrete/rock_impact_hard" .. math.random(1, 6) .. ".wav")
+                        local effectdata = EffectData()
+                        effectdata:SetOrigin(Vector(fortification:GetPos().x, fortification:GetPos().y, fortification:GetPos().z) + (fortification:GetUp() * fortification:OBBMaxs().z / 2))
+                        effectdata:SetMagnitude(3)
+                        effectdata:SetScale(5)
+                        effectdata:SetRadius(2)
+                        util.Effect("cball_explode", effectdata, true, true)
+                    end
                 end
+            end)
 
-                local effectdata = EffectData()
-                effectdata:SetOrigin(Vector(fortification:GetPos().x, fortification:GetPos().y, fortification:GetPos().z) + (fortification:GetUp() * fortification:OBBMaxs().z / 2))
-                effectdata:SetMagnitude(3)
-                effectdata:SetScale(5)
-                effectdata:SetRadius(2)
-                util.Effect("cball_explode", effectdata, true, true)
-                ply:AddCount("ent_fortification", fortification)
-            end
+            timer.Simple(0.26, function()
+                if not built and ply:GetActiveWeapon():IsValid() and ply:GetActiveWeapon():GetClass() == "weapon_pioniertoolbase" then
+                    net.Start("AventinOpenFortPanel")
+                    net.Send(ply)
+                end
+            end)
         end
     end)
 else
@@ -168,7 +176,7 @@ else
 
                     if wep:CanBuildFortification() then
                         fortificationHologram:SetColor(Color(50, 200, 110, 150))
-                    else 
+                    else
                         fortificationHologram:SetColor(Color(200, 67, 50, 150))
                     end
                 end
@@ -176,6 +184,23 @@ else
                 fortificationHologram:Remove()
                 fortificationHologram = nil
             end
+        end
+    end)
+
+    function SWEP:Initialize()
+        radialmenu = vgui.Create("DFrame")
+        radialmenu:SetSize(600, 600)
+        radialmenu:Center()
+        radialmenu:SetVisible(false)
+        radialmenu:SetDeleteOnClose(false)
+    end
+
+    net.Receive("AventinOpenFortPanel", function()
+        gui.EnableScreenClicker(true)
+        radialmenu:SetVisible(true)
+
+        function radialmenu:OnClose()
+            gui.EnableScreenClicker(false)
         end
     end)
 end
