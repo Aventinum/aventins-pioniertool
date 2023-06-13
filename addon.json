@@ -1,0 +1,15 @@
+{
+    "title": "Aventin's Pioniertool",
+    "description": "",
+    "type": "servercontent",
+    "tags": [
+        "realism",
+        "roleplay"
+    ],
+    "ignore": [
+        ".git/*",
+        "README.md",
+        "*.gma",
+        "*.code-workspace"
+    ]
+}
