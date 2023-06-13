@@ -7,7 +7,7 @@ if CLIENT then
     SWEP.DrawCrosshair = false
     SWEP.DrawAmmo = false
 elseif SERVER then
-    util.AddNetworkString("AventinOpenFortPanel")
+    util.AddNetworkString("AventinOpenPanel")
 end
 
 SWEP.Author = "Aventin"
@@ -116,7 +116,7 @@ if SERVER then
                     built = true
                     local wep = ply:GetActiveWeapon()
 
-                    if wep:IsValid() and wep:GetClass() == "weapon_pioniertoolbase" and wep:CanBuildFortification() then
+                    if wep:IsValid() and wep:IsPioneertool() and wep:CanBuildFortification() then
                         local fortification = ents.Create("prop_physics")
                         fortification:SetAngles(Angle(0, ply:EyeAngles().y - 180, 0))
                         fortification:SetModel(wep.Fortifications[wep:GetSelectedFortification()]["model"])
@@ -135,8 +135,8 @@ if SERVER then
             end)
 
             timer.Simple(0.26, function()
-                if not built and ply:GetActiveWeapon():IsValid() and ply:GetActiveWeapon():GetClass() == "weapon_pioniertoolbase" then
-                    net.Start("AventinOpenFortPanel")
+                if not built and ply:GetActiveWeapon():IsValid() and ply:GetActiveWeapon():IsPioneertool() then
+                    net.Start("AventinOpenPanel")
                     net.Send(ply)
                 end
             end)
@@ -152,7 +152,7 @@ else
             local wep = ply:GetActiveWeapon()
             local tr = ply:GetEyeTrace()
 
-            if wep:IsValid() and wep:GetClass() == "weapon_pioniertoolbase" and wep.Fortifications[wep:GetSelectedFortification()] then
+            if wep:IsValid() and wep:IsPioneertool() and wep.Fortifications[wep:GetSelectedFortification()] then
                 local fortificationModel = wep.Fortifications[wep:GetSelectedFortification()]["model"]
                 local fortificationAngles = Angle(0, ply:EyeAngles().y - 180, 0)
 
@@ -195,7 +195,7 @@ else
         radialmenu:SetDeleteOnClose(false)
     end
 
-    net.Receive("AventinOpenFortPanel", function()
+    net.Receive("AventinOpenPanel", function()
         gui.EnableScreenClicker(true)
         radialmenu:SetVisible(true)
 
